@@ -6,6 +6,12 @@ Backend construido con **NestJS + TypeORM + PostgreSQL + Redis**, siguiendo **Cl
 
 # 🚀 Características del proyecto
 
+## 📚 Documentación API
+
+Swagger disponible en:
+
+http://localhost:3000/docs
+
 ## 🧱 Arquitectura
 - Clean Architecture (Domain / Application / Infrastructure / Interfaces)
 - Use Cases como núcleo de la lógica de negocio
@@ -39,6 +45,19 @@ Backend construido con **NestJS + TypeORM + PostgreSQL + Redis**, siguiendo **Cl
 - Rate limiting (protección de ataques)
 
 ---
+
+## 📊 Logging System
+
+El proyecto utiliza un sistema de logging basado en Winston + NestJS Logger.
+
+Características:
+
+- Logs estructurados (JSON)
+- Integración con LoggerService de NestJS
+- Niveles: log, error, warn, debug, verbose
+- Logs con contexto (route, status, metadata)
+- Salida en consola y archivo
+- Interceptor HTTP para medir tiempo de requests
 
 ## 🧪 Testing
 - Unit tests (Use Cases, Repositories, Services, Guards)
