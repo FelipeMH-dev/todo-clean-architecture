@@ -29,7 +29,7 @@ export class AuthController {
   constructor(
     private readonly registerUseCase: RegisterUseCase,
     private readonly loginUseCase: LoginUseCase,
-  ) { }
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -47,6 +47,13 @@ export class AuthController {
   })
   @ApiConflictResponse({
     description: 'Email already registered',
+    schema: {
+      example: {
+        error: 'Conflict',
+        message: 'Email already exists',
+        code: 409,
+      },
+    },
   })
   @ApiAuthAndValidationErrors()
   async register(@Body() dto: RegisterDto) {
@@ -61,14 +68,13 @@ export class AuthController {
   @Post('login')
   @ApiOperation({
     summary: 'User login',
-    description: 'Authenticates user and returns a JWT access token',
+    description: 'Authenticates user and returns JWT access token',
   })
   @ApiOkResponse({
     description: 'Login successful',
     schema: {
       example: {
-        access_token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token',
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example.token',
       },
     },
   })

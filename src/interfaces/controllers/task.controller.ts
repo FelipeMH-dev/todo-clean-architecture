@@ -74,14 +74,44 @@ export class TaskController {
     private readonly getTasks: GetTasksUseCase,
     private readonly updateTask: UpdateTaskUseCase,
     private readonly deleteTask: DeleteTaskUseCase,
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new task' })
   @ApiBody({ type: CreateTaskDto })
-  @ApiResponse({ status: 201, description: 'Task created successfully' })
-  @ApiResponse({ status: 400, description: 'Validation error' })
+
+  @ApiResponse({
+    status: 201,
+    description: 'Task created successfully',
+    schema: {
+      example: {
+        id: 'a1b2c3d4',
+        title: 'Hacer la tarea',
+        description: 'Resolver ejercicios de matemáticas',
+        status: 'pending',
+        userId: 'uuid-user',
+        createdAt: '2026-04-21T12:00:00.000Z',
+        updatedAt: '2026-04-21T12:00:00.000Z',
+      },
+    },
+  })
+
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+    schema: {
+      example: {
+        error: 'Bad Request',
+        message: [
+          'title must be a string',
+          'title must be longer than or equal to 3 characters',
+          'title must be shorter than or equal to 100 characters',
+        ],
+        code: 400,
+      },
+    },
+  })
   create(
     @CurrentUser() user: JwtUser,
     @Body() dto: CreateTaskDto,
@@ -94,11 +124,56 @@ export class TaskController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get user tasks with filters' })
-  @ApiQuery({ name: 'status', required: false })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({ status: 200, description: 'Tasks retrieved successfully' })
+  @ApiOperation({ summary: 'Get user tasks with filters and pagination' })
+
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['pending', 'in_progress', 'done'],
+    description: 'Filter tasks by status',
+    example: 'pending',
+  })
+
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Page number (starts at 1)',
+  })
+
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Number of results per page (max 100)',
+  })
+
+  @ApiResponse({
+    status: 200,
+    description: 'Tasks retrieved successfully',
+    schema: {
+      example: {
+        data: [
+          {
+            id: 'df164145-c7cd-4c27-991d-c0f5699031e2',
+            title: 'Estudiar TypeScript',
+            description: 'Repasar generics y decorators',
+            status: 'pending',
+            createdAt: '2026-04-21T10:00:00.000Z',
+          },
+        ],
+
+        page: 1,
+        limit: 10,
+        total: 25,
+        totalPages: 3,
+
+      },
+    },
+  })
+
   find(
     @CurrentUser() user: JwtUser,
     @Query() query: GetTasksQueryDto,
@@ -110,14 +185,75 @@ export class TaskController {
       query.limit,
     );
   }
-
   @Patch(':id')
   @ApiOperation({ summary: 'Update a task' })
-  @ApiParam({ name: 'id', type: String, description: 'Task UUID' })
-  @ApiBody({ type: UpdateTaskDto })
-  @ApiResponse({ status: 200, description: 'Task updated successfully' })
-  @ApiResponse({ status: 404, description: 'Task not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Task UUID',
+    example: 'df164145-c7cd-4c27-991d-c0f5699031e2',
+  })
+
+  @ApiBody({
+    type: UpdateTaskDto,
+    description: 'Campos opcionales para actualizar la tarea',
+    examples: {
+      example1: {
+        summary: 'Update title and status',
+        value: {
+          title: 'Estudiar TypeScript avanzado',
+          status: 'in_progress',
+        },
+      },
+      example2: {
+        summary: 'Update only description',
+        value: {
+          description: 'Repasar decorators y generics',
+        },
+      },
+    },
+  })
+
+  @ApiResponse({
+    status: 200,
+    description: 'Task updated successfully',
+    schema: {
+      example: {
+        id: 'df164145-c7cd-4c27-991d-c0f5699031e2',
+        title: 'Estudiar TypeScript avanzado',
+        description: 'Repasar decorators y generics',
+        status: 'in_progress',
+        updatedAt: '2026-04-21T12:30:00.000Z',
+      },
+    },
+  })
+
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+    schema: {
+      example: {
+        error: 'Bad Request',
+        message: [
+          'status must be one of the following values: pending, in_progress, done',
+          'title must be shorter than or equal to 100 characters',
+        ],
+        code: 400,
+      },
+    },
+  })
+
+  @ApiResponse({
+    status: 404,
+    description: 'Task not found',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Task not found',
+      },
+    },
+  })
   update(
     @CurrentUser() user: JwtUser,
     @Param('id', new ParseUUIDPipe()) id: string,
